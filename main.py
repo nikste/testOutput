@@ -19,7 +19,8 @@ img_size_y = 16
 batch_size = 10
 max_iter = 10000
 dg = GenerateRedRects(size=[img_size_x,img_size_y,3], batch_size=batch_size)
-layer_info=[{'name': 'c1', 'height': img_size_x, 'width': img_size_y, 'input': 3, 'output': 64}]
+layer_info=[{'name': 'c1', 'height': img_size_x, 'width': img_size_y, 'input': 3, 'output': 64},
+            {'name': 'c2', 'height': img_size_x, 'width': img_size_y, 'input': 64, 'output': 128}]
 ssn = SimpleSegmentationNetwork(layer_info=layer_info)
 
 # x, y, y_seg = dg.next()
@@ -48,7 +49,7 @@ accuracy, loss, netout
 
 tf.summary.scalar('loss', loss)
 tf.summary.scalar('accuracy', accuracy)
-nn = tf.split(netout,2,axis=3)
+nn = tf.split(netout, 2, axis=3)
 tf.summary.image('netout', nn[0])
 tf.summary.image('netout', nn[1])
 
@@ -66,9 +67,9 @@ merged = tf.summary.merge_all()
 saver = tf.train.Saver()
 
 for i in range(0, max_iter):
-    xx, yy, yy_seg = dg.next()
-    _, summary, accuracy_, loss_, netout_ = sess.run([train_step, merged, accuracy, loss, netout], feed_dict={x: xx, y_: yy})
-    print i, accuracy_, loss_
+    xx, yy, yy_seg, yy_seg_classes = dg.next()
+    _, summary, accuracy_, loss_, netout_ = sess.run([train_step, merged, accuracy, loss, netout], feed_dict={x: xx, y_: yy_seg_classes})
+    print i, "accuracy", accuracy_, "loss", loss_
     summary_writer.add_summary(summary, global_step=i)
 
     if i % cfg['SAVE_INTERVAL'] == 0:

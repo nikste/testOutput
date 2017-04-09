@@ -1,5 +1,5 @@
 import tensorflow as tf
-from net_utils import convolutional
+from net_utils import convolutional, weight_variable
 
 
 class SimpleSegmentationNetwork():
@@ -10,7 +10,8 @@ class SimpleSegmentationNetwork():
         self.layer_info = layer_info
         self.layer = [self.x]
         for i in range(0, len(layer_info)):
-            self.layer.append(self.create_hidden(layer_info[i], self.layer[i - 1]))
+            print i, 'len(self.layer)', len(self.layer), 'output', layer_info[i], 'input', self.layer[i - 1]
+            self.layer.append(self.create_hidden(layer_info[i], self.layer[i]))
 
         # self.output = self.layer[-1]
         self.create_output(num_classes)
@@ -22,6 +23,22 @@ class SimpleSegmentationNetwork():
         return [layer_info['height'], layer_info['width'], layer_info['input'], layer_info['output']]
 
     def create_output(self, num_classes):
+        out_conv = self.layer[-1]
+        raw_scores_per_pxl = convolutional(out_conv, [self.layer_info[-1]['height'], self.layer_info[-1]['width'],
+                                                      self.layer_info[-1]['output'], num_classes], name='raw_scores')
+        self.raw_scores_per_pxl = raw_scores_per_pxl
+        raw_scores_per_pxl_flat = tf.reshape(raw_scores_per_pxl, [-1, num_classes])
+        y_flat = tf.reshape(self.y_, [-1, num_classes])
+        cross_entropy = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y_flat, logits=raw_scores_per_pxl_flat), name='cross_entropy')
+        self.loss = cross_entropy
+
+
+        self.accuracy = tf.reduce_mean(tf.cast(tf.equal(y_flat, raw_scores_per_pxl_flat), tf.float32))
+        self.train_step = tf.train.AdamOptimizer(1e-4).minimize(self.loss)
+
+        self.output = tf.argmax(tf.nn.softmax(raw_scores_per_pxl), axis=-1)
+
+    def create_output_ws(self, num_classes):
         out_conv = self.layer[-1]
         # reduce dimensions to num_classes
         raw_scores_per_pxl = convolutional(out_conv, [self.layer_info[-1]['height'], self.layer_info[-1]['width'], self.layer_info[-1]['output'], num_classes], name='raw_scores')
