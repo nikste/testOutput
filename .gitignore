@@ -1,6 +1,13 @@
 
 # Created by https://www.gitignore.io/api/git,python,pycharm
 
+# custom
+.idea/
+./saves
+./summary
+
+
+
 ### Git ###
 *.orig
 
