@@ -1,6 +1,7 @@
 RESNET_DIR:     './resnet_pretrained/resnet101_atrous/resnet101_atrous'
 DATASET_DIR:    './data/VOC2012/'
 CHECKPOINT_DIR: './saves/'
+#
 MODEL_NAME:     'model_sigm_with_max_glob_pool'
 NUM_CLASSES:    20
 IMAGES_SHAPES:  [480, 480]
@@ -10,5 +11,5 @@ SUMMARY_INTERVAL: 10
 #Not working in the moment
 VALIDATION_INTERVAL: 100
 SAVE_INTERVAL: 100
-LOAD_FROM_CHECKPOINT: False
+LOAD_FROM_CHECKPOINT: True
 PLOT_RESULTS: -1
